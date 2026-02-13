@@ -1,23 +1,40 @@
 // src/app.js
 import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import routes from './routes/index.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { requestLogger } from './middleware/logger.js'; 
 
 const app = express();
 
-// Middleware para parsear JSON
-app.use(express.json());
+// Seguridad
+app.use(helmet());
+app.use(cors());
 
-// Ruta de prueba
+// Parseo de body
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true }));
+
+
 app.get('/', (req, res) => {
-  res.json({ mensaje: 'API funcionando correctamente' });
-});
-
-// Ruta de health check
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+  res.json({
+    mensaje: 'Servidor funcionando correctamente',
+    acceso_api: '/api'
   });
 });
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// Rutas de la API
+app.use('/api', routes);
+
+// Manejo de errores
+app.use(notFoundHandler);
+app.use(errorHandler);
+app.use(requestLogger);
 
 export default app;
