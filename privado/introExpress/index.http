@@ -1,0 +1,95 @@
+### Configuración de Variables
+@baseUrl = http://localhost:3000
+@apiUrl = {{baseUrl}}/api/tarea
+
+# @name healthCheck
+GET {{baseUrl}}/health
+
+---
+
+### 1. LISTAR TAREAS (Sin filtros)
+GET {{apiUrl}}
+
+---
+
+### 2. CREAR TAREA 1 (Prioridad Alta - Para pruebas de filtro)
+# @name crearTareaAlta
+POST {{apiUrl}}
+Content-Type: application/json
+
+{
+  "title": "Aprender Express Avanzado",
+  "description": "Dominar middlewares, Zod y UUID",
+  "priority": "high",
+  "dueDate": "2026-06-20T10:00:00Z",
+  "tags": ["estudio", "backend", "node"]
+}
+
+### 3. CREAR TAREA 2 (Prioridad Baja y Completada)
+# @name crearTareaBaja
+POST {{apiUrl}}
+Content-Type: application/json
+
+{
+  "title": "Comprar café",
+  "description": "El equipo se queda sin cafeína",
+  "priority": "low",
+  "completed": true,
+  "tags": ["oficina", "compras"]
+}
+
+---
+
+### Capturamos el ID de la primera tarea creada para usarlo abajo
+@tareaId = {{crearTareaAlta.response.body.id}}
+
+### 4. OBTENER TAREA ESPECÍFICA (Por UUID)
+GET {{apiUrl}}/{{tareaId}}
+
+---
+
+### 5. PRUEBAS DE FILTROS (Requisitos del ejercicio)
+
+### A. Filtrar por estado completado
+GET {{apiUrl}}?completed=true
+
+### B. Filtrar por prioridad alta
+GET {{apiUrl}}?priority=high
+
+### C. Filtrar por Tag (trabajo/estudio)
+GET {{apiUrl}}?tag=estudio
+
+### D. Ordenar por fecha de vencimiento (Ascendente)
+GET {{apiUrl}}?sortBy=dueDate&order=asc
+
+---
+
+### 6. ACTUALIZAR TAREA (Cambiar prioridad o título)
+PUT {{apiUrl}}/{{tareaId}}
+Content-Type: application/json
+
+{
+  "title": "Aprender Express y Zod (Actualizado)",
+  "priority": "medium",
+  "tags": ["estudio", "zod"]
+}
+
+### 7. CAMBIAR ESTADO (Toggle)
+PATCH {{apiUrl}}/{{tareaId}}/toggle
+
+---
+
+### 8. PROBAR VALIDACIÓN (Debe fallar - Título corto y fecha pasada)
+POST {{apiUrl}}
+Content-Type: application/json
+
+{
+  "title": "Ab",
+  "priority": "invalid-priority",
+  "dueDate": "2020-01-01T10:00:00Z"
+}
+
+---
+
+### 9. ELIMINAR TAREA
+DELETE {{apiUrl}}/{{tareaId}}

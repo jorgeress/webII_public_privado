@@ -32,6 +32,11 @@ app.get('/health', (req, res) => {
 // Rutas de la API
 app.use('/api', routes);
 
+app.use((req, res, next) => {
+  const ahora = new Date().toISOString();
+  console.log(`[${ahora}] ${req.method} ${req.path}`);
+  next();
+});
 // Manejo de errores
 app.use(notFoundHandler);
 app.use(errorHandler);
