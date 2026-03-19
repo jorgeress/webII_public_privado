@@ -1,42 +1,41 @@
-### Configuración
+# Configuración
 @api = http://localhost:3000/api
-@id_pelicula = 69a1917156cf937f64f16bb7
+@id_pelicula = 69a1a2c7fb349fdfe0235954
 
-### Crear película
+# Crear película
 POST http://localhost:3000/api/movie
 Content-Type: application/json
 
 {
-  "title": "Pulpo",
-  "director": "Quedddd",
-  "year": 1954,
-  "genre": "pop",
+  "title": "si",
+  "director": "si",
+  "year": 1354,
+  "genre": "horror",
   "copies": 5
 }
 
-### 2. Obtener todas las películas (GET)
+# 2. Obtener todas las películas 
 GET {{api}}/movie
 
-### 3. Filtrar por género (GET)
-GET {{api}}/movie?genre=action
+# 3. Filtrar por género 
+GET {{api}}/movie?genre=horror
 
-### 4. Buscar por título (GET - Bonus)
-GET {{api}}/movie?search=pulp
+# 4. Buscar por título 
+GET {{api}}/movie?search=fic
 
-### 5. Alquilar una película (POST)
+# 5. Alquilar una película 
 # Decrementa availableCopies e incrementa timesRented
 POST {{api}}/movie/{{id_pelicula}}/rent
 
-### 6. Devolver una película (POST)
+# 6. Devolver una película 
 # Incrementa availableCopies
 POST {{api}}/movie/{{id_pelicula}}/return
 
-### 7. Ver Top 5 más alquiladas (GET)
+# 7. Ver Top 5 más alquiladas 
 GET {{api}}/movie/stats/top
 
-### 8. Subir carátula (PATCH)
-# Nota: Necesitas tener una imagen llamada 'poster.jpg' en la misma carpeta que este archivo .http
-# O usar Postman/Insomnia si el REST Client te da problemas con multipart
+# 8. Subir carátula 
+# Se necesita tener una imagen llamada 'poster.jpg' en la misma carpeta que este archivo .http
 PATCH {{api}}/movie/{{id_pelicula}}/cover
 Content-Type: multipart/form-data; boundary=boundary
 
@@ -47,9 +46,9 @@ Content-Type: image/jpeg
 < ./poster.jpg
 --boundary--
 
-### 9. Obtener la imagen de la carátula (GET)
+# 9. Obtener la imagen de la carátula 
 GET {{api}}/movie/{{id_pelicula}}/cover
 
-### 10. Eliminar película (DELETE)
+# 10. Eliminar película 
 # Esto también debería borrar el archivo físico en /storage
 DELETE {{api}}/movie/{{id_pelicula}}

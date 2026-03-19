@@ -26,7 +26,7 @@ Content-Type: {{contentType}}
 {
   "name": "Juan Pérez",
   "age": 25,
-  "email": "juan@ejemplo.com",
+  "email": "juandd@ejemplo.com",
   "password": "MiPassword123"
 }
 
@@ -35,7 +35,7 @@ POST {{baseUrl}}/auth/login HTTP/1.1
 Content-Type: {{contentType}}
 
 {
-  "email": "juan@ejemplo.com",
+  "email": "juandd@ejemplo.com",
   "password": "MiPassword123"
 }
 
@@ -45,12 +45,12 @@ Content-Type: {{contentType}}
 
 ### Obtener usuario actual (requiere token)
 GET {{baseUrl}}/auth/me HTTP/1.1
-Authorization: Bearer {{token}}
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWIzZGRlOWQ2YzNmNTg5ZGVlZjU4N2EiLCJyb2xlIjoidXNlciIsImlhdCI6MTc3MzM5NTQ2OCwiZXhwIjoxNzczNDAyNjY4fQ.SXqFkdKvUAju-b_WzDp-oMVpkQG5Fbx7z9QWfauDPFo
 
 ### Actualizar perfil
 PUT {{baseUrl}}/auth/me HTTP/1.1
 Content-Type: {{contentType}}
-Authorization: Bearer {{token}}
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWIzZGRlOWQ2YzNmNTg5ZGVlZjU4N2EiLCJyb2xlIjoidXNlciIsImlhdCI6MTc3MzM5NTQ2OCwiZXhwIjoxNzczNDAyNjY4fQ.SXqFkdKvUAju-b_WzDp-oMVpkQG5Fbx7z9QWfauDPFo
 
 {
   "name": "Juan Pérez Actualizado",
@@ -60,7 +60,7 @@ Authorization: Bearer {{token}}
 ### Cambiar contraseña
 PUT {{baseUrl}}/auth/password HTTP/1.1
 Content-Type: {{contentType}}
-Authorization: Bearer {{token}}
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWIzZGRlOWQ2YzNmNTg5ZGVlZjU4N2EiLCJyb2xlIjoidXNlciIsImlhdCI6MTc3MzM5NTQ2OCwiZXhwIjoxNzczNDAyNjY4fQ.SXqFkdKvUAju-b_WzDp-oMVpkQG5Fbx7z9QWfauDPFo
 
 {
   "currentPassword": "MiPassword123",
@@ -75,7 +75,7 @@ Authorization: Bearer {{token}}
 GET {{baseUrl}}/tracks HTTP/1.1
 
 ### Obtener track por ID
-GET {{baseUrl}}/tracks/507f1f77bcf86cd799439011 HTTP/1.1
+GET {{baseUrl}}/tracks/69a00fbe39ce1c3fd0ae7a98 HTTP/1.1
 
 ### ==========================================
 ### TRACKS - Protegidas (user o admin)
@@ -84,7 +84,7 @@ GET {{baseUrl}}/tracks/507f1f77bcf86cd799439011 HTTP/1.1
 ### Crear track (requiere token)
 POST {{baseUrl}}/tracks HTTP/1.1
 Content-Type: {{contentType}}
-Authorization: Bearer {{token}}
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWIzZGRlOWQ2YzNmNTg5ZGVlZjU4N2EiLCJyb2xlIjoidXNlciIsImlhdCI6MTc3MzM5NTQ2OCwiZXhwIjoxNzczNDAyNjY4fQ.SXqFkdKvUAju-b_WzDp-oMVpkQG5Fbx7z9QWfauDPFo
 
 {
   "title": "Mi Primera Canción",
@@ -93,7 +93,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Actualizar track
-PUT {{baseUrl}}/tracks/507f1f77bcf86cd799439011 HTTP/1.1
+PUT {{baseUrl}}/tracks/69a00fbe39ce1c3fd0ae7a98 HTTP/1.1
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 

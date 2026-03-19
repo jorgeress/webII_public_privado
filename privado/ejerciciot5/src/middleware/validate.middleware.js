@@ -1,16 +1,14 @@
 import mongoose from 'mongoose';
 
 /**
- * Middleware de validación universal
+ * Middleware de validación
  */
 export const validate = (schema) => (req, res, next) => {
   try {
-    // Como tu validatorMovie espera title, year, etc.,
-    // le pasamos directamente el req.body
+
     req.body = schema.parse(req.body);
     next();
   } catch (error) {
-    // Mapeamos los errores para que el profesor vea un JSON limpio
     const errors = error.errors.map(e => ({
       field: e.path.join('.'),
       message: e.message
