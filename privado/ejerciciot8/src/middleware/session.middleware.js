@@ -2,29 +2,30 @@ import { verifyToken } from '../utils/handleJwt.js';
 import User from '../models/user.model.js';
 
 const sessionMiddleware = async (req, res, next) => {
-  try {
-    if (!req.headers.authorization) {
-      return res.status(401).json({ message: 'NOT_TOKEN' });
+    try {
+        if (!req.headers.authorization) {
+            return res.status(401).json({ message: "No se encontró el token" });
+        }
+
+        const token = req.headers.authorization.split(' ').pop(); // Bearer <token>
+        const dataToken = await verifyToken(token);
+
+        if (!dataToken) {
+            return res.status(401).json({ message: "Token no válido" });
+        }
+
+        // Importante: Usamos dataToken.userId porque así lo configuramos en handleJwt
+        const user = await User.findById(dataToken.userId);
+        
+        if (!user) {
+            return res.status(401).json({ message: "Usuario no encontrado" });
+        }
+
+        req.user = user; // Inyectamos el usuario en la petición
+        next();
+    } catch (err) {
+        res.status(401).json({ message: "Sesión no válida" });
     }
-
-    const token = req.headers.authorization.split(' ').pop();
-    const decoded = verifyToken(token);
-
-    if (!decoded || !decoded.userId) {
-      return res.status(401).json({ message: 'INVALID_TOKEN' });
-    }
-
-    const user = await User.findById(decoded.userId);
-
-    if (!user) {
-      return res.status(401).json({ message: 'USER_NOT_FOUND' });
-    }
-
-    req.user = user;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: 'NOT_SESSION' });
-  }
 };
 
 export default sessionMiddleware;

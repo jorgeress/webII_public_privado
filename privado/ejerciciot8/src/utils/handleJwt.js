@@ -1,37 +1,26 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
-
 /**
- * Genera un token JWT
- * @param {Object} user - Usuario con _id y role
- * @returns {string} - Token JWT
+ * Firma el token con el ID del usuario y el rol
  */
 export const tokenSign = (user) => {
-  const sign = jwt.sign(
+  return jwt.sign(
     {
-      _id: user._id,
+      userId: user._id, // Asegúrate de que sea userId para el middleware
       role: user.role
     },
-    JWT_SECRET,
-    {
-      expiresIn: JWT_EXPIRES_IN
-    }
+    process.env.JWT_SECRET,
+    { expiresIn: "2h" }
   );
-  return sign;
 };
 
 /**
- * Verifica y decodifica un token
- * @param {string} tokenJwt - Token a verificar
- * @returns {Object|null} - Payload del token o null si es inválido
+ * Verifica si el token es válido
  */
-export const verifyToken = (tokenJwt) => {
+export const verifyToken = (token) => {
   try {
-    return jwt.verify(tokenJwt, JWT_SECRET);
-  } catch (err) {
-    console.log('Error verificando token:', err.message);
+    return jwt.verify(token, process.env.JWT_SECRET);
+  } catch (e) {
     return null;
   }
 };
