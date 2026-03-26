@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '../utils/handleJwt.js';
 import User from '../models/user.model.js';
 
 const sessionMiddleware = async (req, res, next) => {
@@ -8,7 +8,7 @@ const sessionMiddleware = async (req, res, next) => {
     }
 
     const token = req.headers.authorization.split(' ').pop();
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyToken(token);
 
     if (!decoded || !decoded.userId) {
       return res.status(401).json({ message: 'INVALID_TOKEN' });
