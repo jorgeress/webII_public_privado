@@ -1,0 +1,78 @@
+@baseUrl = http://localhost:3000
+
+### 1. Login - ejecuta esto primero y copia el token
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@biblioteca.com",
+  "password": "admin123"
+}
+
+### 2. Define el token manualmente aquí tras hacer login
+@token = PEGA_AQUI_EL_TOKEN_DEL_LOGIN
+
+### 3. Get my profile
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### 4. Get all books
+GET {{baseUrl}}/api/books
+
+### 5. Get books con filtros
+GET {{baseUrl}}/api/books?genre=Misterio&page=1&limit=5
+
+### 6. Get book by id
+GET {{baseUrl}}/api/books/1
+
+### 7. Create book (necesita LIBRARIAN o ADMIN)
+POST {{baseUrl}}/api/books
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "isbn": "978-84-000-0001-1",
+  "title": "Libro de prueba",
+  "author": "Autor Test",
+  "genre": "Ficción",
+  "publishedYear": 2020,
+  "copies": 3
+}
+
+### 8. Create loan
+POST {{baseUrl}}/api/loans
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "bookId": 1
+}
+
+### 9. My loans
+GET {{baseUrl}}/api/loans
+Authorization: Bearer {{token}}
+
+### 10. Return loan
+PUT {{baseUrl}}/api/loans/1/return
+Authorization: Bearer {{token}}
+
+### 11. Get reviews of book
+GET {{baseUrl}}/api/books/1/reviews
+
+### 12. Create review (necesita haber devuelto el libro)
+POST {{baseUrl}}/api/books/1/reviews
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "rating": 5,
+  "comment": "Excelente libro"
+}
+
+### 13. Delete review
+DELETE {{baseUrl}}/api/reviews/1
+Authorization: Bearer {{token}}
+
+### 14. Stats
+GET {{baseUrl}}/api/stats
+Authorization: Bearer {{token}}
