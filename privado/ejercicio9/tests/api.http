@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:3000
 
-### 1. Login - ejecuta esto primero y copia el token
+### 1. Login - copia el token
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### 2. Define el token manualmente aquí tras hacer login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NTY3NjM3MSwiZXhwIjoxNzc1NjgzNTcxfQ.gcrcGefgeAgGe_ZnYZbmvcTzJwzXSB95efUZq5R2sXE
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NTc1MTQ4NiwiZXhwIjoxNzc1NzU4Njg2fQ.DwAQHwLwz_r_mY3bxtUg5LA1W_MHBdKWDVbz7PtYupc
 
 ### 3. Get my profile
 GET {{baseUrl}}/api/auth/me
