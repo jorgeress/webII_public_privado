@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### 2. Define el token manualmente aquí tras hacer login
-@token = PEGA_AQUI_EL_TOKEN_DEL_LOGIN
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3NTY3NjM3MSwiZXhwIjoxNzc1NjgzNTcxfQ.gcrcGefgeAgGe_ZnYZbmvcTzJwzXSB95efUZq5R2sXE
 
 ### 3. Get my profile
 GET {{baseUrl}}/api/auth/me
