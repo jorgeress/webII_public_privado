@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,   // index unique (T5)
+      unique: true,   
       lowercase: true,
       trim: true,
     },
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['pending', 'verified'],
       default: 'pending',
-      index: true,   // index (T5)
+      index: true,   
     },
 
     // Verificación de email
@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
     company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
-      index: true,   // index (T5)
+      index: true,   
     },
 
     address: addressSchema,
@@ -58,15 +58,13 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },   // necesario para que fullName aparezca en res.json()
+    toJSON: { virtuals: true },   
     toObject: { virtuals: true },
   }
 );
 
-// ── Indexes adicionales (T5) ────────────────────────────────────────────────
 userSchema.index({ role: 1 });
 
-// ── Virtual: fullName (T5) ──────────────────────────────────────────────────
 // No se almacena en la BD; se calcula cada vez que se serializa el documento.
 userSchema.virtual('fullName').get(function () {
   if (this.name && this.lastName) return `${this.name} ${this.lastName}`;
