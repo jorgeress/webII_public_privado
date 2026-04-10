@@ -1,0 +1,64 @@
+@baseUrl = http://localhost:3000
+
+### 1. REGISTRO USUARIO A
+# @name registerA
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "Juan_Pro",
+  "email": "juan@test.com",
+  "password": "password123"
+}
+
+### 2. REGISTRO USUARIO B
+# @name registerB
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "Maria_Dev",
+  "email": "maria@test.com",
+  "password": "password123"
+}
+
+### VARIABLES DE TOKEN (Se llenan solas tras ejecutar los POST de arriba)
+@tokenA = {{registerA.response.body.token}}
+@tokenB = {{registerB.response.body.token}}
+
+### 3. JUAN CREA UNA SALA
+# @name createRoom
+POST {{baseUrl}}/api/rooms
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "name": "Sala de Pruebas",
+  "description": "Probando el chat entre dos",
+  "isPrivate": false
+}
+
+### VARIABLE DE SALA
+@roomId = {{createRoom.response.body.room._id}}
+
+### 4. JUAN ENVÍA UN MENSAJE
+POST {{baseUrl}}/api/rooms/{{roomId}}/messages
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{
+  "content": "¡Hola Maria! ¿Funciona el chat?"
+}
+
+### 5. MARIA RESPONDE
+POST {{baseUrl}}/api/rooms/{{roomId}}/messages
+Authorization: Bearer {{tokenB}}
+Content-Type: application/json
+
+{
+  "content": "¡Sí! Te leo perfectamente."
+}
+
+### 6. VER HISTORIAL
+GET {{baseUrl}}/api/rooms/{{roomId}}/messages
+Authorization: Bearer {{tokenA}}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>NexusChat - Login</title>
+  <style>
+    body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+    h2 { text-align: center; color: #333; }
+    .field { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; }
+    input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #0056b3; }
+    .toggle { text-align: center; margin-top: 1rem; font-size: 13px; color: #007bff; cursor: pointer; }
+    .error { color: red; font-size: 12px; margin-bottom: 10px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="formTitle">Acceder</h2>
+    <form id="authForm">
+      <div class="field" id="userField" style="display:none">
+        <label>Usuario</label>
+        <input type="text" id="username">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="password" required>
+      </div>
+      <div id="errorMsg" class="error"></div>
+      <button type="submit" id="submitBtn">Entrar</button>
+    </form>
+    <div class="toggle" onclick="toggleMode()" id="toggleBtn">¿No tienes cuenta? Regístrate</div>
+  </div>
+
+  <script>
+    let isLogin = true;
+    const form = document.getElementById('authForm');
+
+    function toggleMode() {
+      isLogin = !isLogin;
+      document.getElementById('formTitle').textContent = isLogin ? 'Acceder' : 'Registro';
+      document.getElementById('userField').style.display = isLogin ? 'none' : 'block';
+      document.getElementById('submitBtn').textContent = isLogin ? 'Entrar' : 'Crear Cuenta';
+      document.getElementById('toggleBtn').textContent = isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Accede';
+    }
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const body = { email: email.value, password: password.value };
+      if (!isLogin) body.username = username.value;
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/chat.html';
+      } catch (err) {
+        const errEl = document.getElementById('errorMsg');
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      }
+    };
+  </script>
+</body>
+</html>

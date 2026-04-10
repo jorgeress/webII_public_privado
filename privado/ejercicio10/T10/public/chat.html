@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>NexusChat</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; background: #e5ddd5; }
+    /* Sidebar */
+    .sidebar { width: 250px; background: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 15px; border-bottom: 1px solid #ddd; font-weight: bold; background: #f0f2f5; }
+    .rooms { flex: 1; overflow-y: auto; }
+    .room-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+    .room-item:hover { background: #f9f9f9; }
+    /* Main */
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .chat-header { padding: 15px; background: #ededed; border-bottom: 1px solid #ddd; }
+    .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .msg { background: white; padding: 8px 12px; border-radius: 8px; max-width: 70%; width: fit-content; }
+    .msg.mine { align-self: flex-end; background: #dcf8c6; }
+    .msg small { display: block; color: #888; font-size: 10px; margin-bottom: 4px; }
+    /* Input */
+    .input-area { padding: 10px; background: #f0f0f0; display: flex; gap: 10px; }
+    input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+    button { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header" id="userName">Cargando...</div>
+    <div class="rooms" id="roomsList"></div>
+    <button onclick="logout()" style="margin:10px;">Salir</button>
+  </aside>
+  <aside class="sidebar">
+  <div class="sidebar-header" id="userName">Cargando...</div>
+  
+  <div style="padding: 10px; border-bottom: 1px solid #ddd;">
+    <input type="text" id="newRoomName" placeholder="Nueva sala..." style="width: 100%; margin-bottom: 5px;">
+    <button onclick="createNewRoom()" style="width: 100%; font-size: 12px;">+ Crear Sala</button>
+  </div>
+
+  <div class="rooms" id="roomsList"></div>
+  <button onclick="logout()" style="margin:10px;">Salir</button>
+  </aside>
+
+  <main class="main">
+    <div class="chat-header" id="roomTitle">Selecciona una sala</div>
+    <div class="messages" id="messagesWrap"></div>
+    <form class="input-area" onsubmit="sendMsg(event)">
+      <input type="text" id="msgInput" placeholder="Escribe un mensaje..." autocomplete="off">
+      <button type="submit">Enviar</button>
+    </form>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    let currentRoom = null;
+    let socket;
+
+    if (!token) window.location.href = '/';
+    document.getElementById('userName').textContent = `Hola, ${user.username}`;
+
+    // Socket Setup
+    socket = io({ auth: { token } });
+
+    socket.on('chat:message', appendMessage);
+    
+    async function loadRooms() {
+      const res = await fetch('/api/rooms', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      const list = document.getElementById('roomsList');
+      list.innerHTML = data.rooms.map(r => `
+        <div class="room-item" onclick="joinRoom('${r._id}', '${r.name}')"># ${r.name}</div>
+      `).join('');
+    }
+
+    function joinRoom(id, name) {
+      currentRoom = id;
+      document.getElementById('roomTitle').textContent = `# ${name}`;
+      document.getElementById('messagesWrap').innerHTML = '';
+      socket.emit('room:join', { roomId: id });
+    }
+
+    function sendMsg(e) {
+      e.preventDefault();
+      const input = document.getElementById('msgInput');
+      if (!input.value || !currentRoom) return;
+      socket.emit('chat:message', { roomId: currentRoom, content: input.value });
+      input.value = '';
+    }
+
+    function appendMessage(msg) {
+      const wrap = document.getElementById('messagesWrap');
+      const div = document.createElement('div');
+      const isMe = msg.sender._id === user._id;
+      div.className = `msg ${isMe ? 'mine' : ''}`;
+      div.innerHTML = `<small>${msg.sender.username}</small> ${msg.content}`;
+      wrap.appendChild(div);
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/';
+    }
+    async function createNewRoom() {
+  const nameInput = document.getElementById('newRoomName');
+  const name = nameInput.value.trim();
+
+  if (!name) return alert('Ponle un nombre a la sala');
+
+  try {
+    const res = await fetch('/api/rooms', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ name, description: "Sala creada desde el chat" })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error);
+
+    nameInput.value = ''; // Limpiar input
+    loadRooms(); // Recargar la lista de salas para que aparezca la nueva
+    alert(`Sala "${name}" creada con éxito`);
+  } catch (err) {
+    alert('Error al crear sala: ' + err.message);
+  }
+}
+    loadRooms();
+  </script>
+</body>
+</html>
