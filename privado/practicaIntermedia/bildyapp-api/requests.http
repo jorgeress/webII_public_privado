@@ -1,0 +1,192 @@
+### BildyApp API — Ejemplos de endpoints
+### Configura las variables antes de ejecutar en orden
+
+@baseUrl = http://localhost:3000/api
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZGQwNzIzOTExZWJkOWQxOGU3NjU2OCIsImlhdCI6MTc3NjA5MzAyMCwiZXhwIjoxNzc2MDkzOTIwfQ.L6hfHgNdAalKOgQgYoKBmrHcRnMtf5kG5-p1seWZRgI
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZGQwNzIzOTExZWJkOWQxOGU3NjU2OCIsImlhdCI6MTc3NjA5MzAyMCwiZXhwIjoxNzc2Njk3ODIwfQ.6t76-0hyTxRFignbe46ebrwX5WfYNQ-w7kqU1iunlg0
+# ─────────────────────────────────────────────
+# 1. REGISTRO DE USUARIO
+# ─────────────────────────────────────────────
+POST {{baseUrl}}/user/register
+Content-Type: application/json
+
+{
+  "email": "maria9@ejemplo.com",
+  "password": "password123"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 2. VALIDACIÓN DEL EMAIL
+# Consulta el verificationCode en MongoDB Atlas
+# y pégalo aquí
+# ─────────────────────────────────────────────
+PUT {{baseUrl}}/user/validation
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "code": "104093"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 3. LOGIN
+# ─────────────────────────────────────────────
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+  "email": "maria9@ejemplo.com",
+  "password": "password123"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 4a. ONBOARDING — DATOS PERSONALES
+# ─────────────────────────────────────────────
+PUT {{baseUrl}}/user/register
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "María",
+  "lastName": "García López",
+  "nif": "12345678A",
+  "address": {
+    "street": "Calle Mayor",
+    "number": "10",
+    "postal": "28001",
+    "city": "Madrid",
+    "province": "Madrid"
+  }
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 4b. ONBOARDING — COMPAÑÍA (nueva empresa)
+# ─────────────────────────────────────────────
+PATCH {{baseUrl}}/user/company
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "isFreelance": false,
+  "name": "Acme S.L.",
+  "cif": "B12345678",
+  "address": {
+    "street": "Paseo de la Castellana",
+    "number": "100",
+    "postal": "28046",
+    "city": "Madrid",
+    "province": "Madrid"
+  }
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 4b. ONBOARDING — COMPAÑÍA (autónomo)
+# El CIF se toma del NIF del usuario automáticamente
+# ─────────────────────────────────────────────
+PATCH {{baseUrl}}/user/company
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "isFreelance": true
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 5. LOGO DE LA COMPAÑÍA
+# Enviar como multipart/form-data con campo "logo"
+# ─────────────────────────────────────────────
+PATCH {{baseUrl}}/user/logo
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="logo"; filename="logo.png"
+Content-Type: image/png
+
+< ./logo.png
+------FormBoundary--
+
+###
+
+# ─────────────────────────────────────────────
+# 6. OBTENER USUARIO (con populate de Company)
+# ─────────────────────────────────────────────
+GET {{baseUrl}}/user
+Authorization: Bearer {{accessToken}}
+
+###
+
+# ─────────────────────────────────────────────
+# 7a. REFRESH TOKEN
+# ─────────────────────────────────────────────
+POST {{baseUrl}}/user/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 7b. LOGOUT
+# ─────────────────────────────────────────────
+POST {{baseUrl}}/user/logout
+Authorization: Bearer {{accessToken}}
+
+###
+
+# ─────────────────────────────────────────────
+# 8. ELIMINAR USUARIO — Soft delete
+# ─────────────────────────────────────────────
+DELETE {{baseUrl}}/user?soft=true
+Authorization: Bearer {{accessToken}}
+
+###
+
+# ─────────────────────────────────────────────
+# 8. ELIMINAR USUARIO — Hard delete
+# ─────────────────────────────────────────────
+DELETE {{baseUrl}}/user?soft=false
+Authorization: Bearer {{accessToken}}
+
+###
+
+# ─────────────────────────────────────────────
+# 9. CAMBIAR CONTRASEÑA (bonus)
+# ─────────────────────────────────────────────
+PUT {{baseUrl}}/user/password
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "currentPassword": "password123",
+  "newPassword": "nuevaPassword456"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 10. INVITAR COMPAÑERO (solo admin)
+# ─────────────────────────────────────────────
+POST {{baseUrl}}/user/invite
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "email": "invitado@ejemplo.com",
+  "name": "Carlos",
+  "lastName": "Martínez"
+}

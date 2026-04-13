@@ -256,10 +256,9 @@ export async function refreshToken(req, res, next) {
 
 export async function logout(req, res, next) {
   try {
-    const { refreshToken: token } = req.body;
+    const token = req.body?.refreshToken;
     const user = await User.findById(req.user._id);
 
-    // Invalida el refresh token específico (o todos si no se envía ninguno)
     if (token) {
       user.refreshTokens = user.refreshTokens.filter((t) => t !== token);
     } else {

@@ -24,8 +24,8 @@ function fileFilter(_req, file, cb) {
   }
 }
 
-export const upload = multer({
+export const uploadLogo = multer({
   storage,
   fileFilter,
   limits: { fileSize: config.upload.maxSizeMb * 1024 * 1024 },
-});
+}).single('logo');
