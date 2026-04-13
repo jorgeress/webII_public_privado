@@ -23,12 +23,12 @@ const companySchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     cif: { type: String, required: true, unique: true, trim: true },
     address: addressSchema,
-    logo: { type: String, default: null },   // URL del logo subido con Multer
+    logo: { type: String, default: null },   
     isFreelance: { type: Boolean, default: false },
     deleted: { type: Boolean, default: false },
   },
   {
-    timestamps: true,  // crea createdAt y updatedAt automáticamente
+    timestamps: true,  
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }

@@ -1,5 +1,5 @@
 // src/middleware/role.middleware.js
-// Middleware de autorización basado en roles (T7).
+// Middleware de autorización basado en roles.
 // Debe usarse DESPUÉS de authenticate.
 // Uso: router.post('/ruta', authenticate, requireRole('admin'), controller)
 

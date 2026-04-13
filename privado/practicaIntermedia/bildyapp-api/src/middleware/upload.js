@@ -1,5 +1,5 @@
 // src/middleware/upload.js
-// Configuración de Multer para subida de imágenes (T5).
+// Configuración de Multer para subida de imágenes.
 // Solo acepta imágenes y limita el tamaño según config.
 
 import multer from 'multer';

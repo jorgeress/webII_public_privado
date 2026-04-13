@@ -26,7 +26,6 @@ function normalizeError(err) {
   return err;
 }
 
-// eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, next) {
   const error = normalizeError(err);
 

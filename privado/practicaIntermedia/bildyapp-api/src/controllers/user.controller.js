@@ -55,6 +55,7 @@ export async function register(req, res, next) {
 
     notificationService.emit('user:registered', user);
 
+    // Nota para investigar luego, hacer tambien sistema de alertas centralizadas de exito como con los errores o notification.
     res.status(201).json({
       status: 'success',
       data: { email: user.email, status: user.status, role: user.role },
@@ -212,7 +213,7 @@ export async function uploadLogo(req, res, next) {
 export async function getMe(req, res, next) {
   try {
     const user = await User.findById(req.user._id)
-      .populate('company')           // populate (T5)
+      .populate('company')           
       .select('-password -verificationCode -refreshTokens');
 
     res.json({ status: 'success', data: user }); // fullName sale por toJSON: { virtuals: true }
@@ -294,7 +295,7 @@ export async function deleteUser(req, res, next) {
   }
 }
 
-// ── 9. Cambiar contraseña — PUT /api/user/password (BONUS) ───────────────────
+// ── 9. Cambiar contraseña — PUT /api/user/password ───────────────────
 
 export async function changePassword(req, res, next) {
   try {
