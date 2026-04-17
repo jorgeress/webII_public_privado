@@ -24,7 +24,6 @@ app.use('/api/books', booksRoutes);
 app.use('/api/loans', loansRoutes);
 app.use('/api/books/:id/reviews', reviewsRoutes);
 
-// DELETE reviews — ruta independiente porque no encaja bajo /books/:id/reviews
 app.delete('/api/reviews/:id', authenticate, validate(idParamSchema), asyncHandler(deleteReview));
 
 // Stats

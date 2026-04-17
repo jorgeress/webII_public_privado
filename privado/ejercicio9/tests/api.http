@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000
+@baseUrl = webiipublicprivado-production.up.railway.app
 
 ### 1. Login - copia el token
 POST {{baseUrl}}/api/auth/login

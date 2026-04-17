@@ -179,9 +179,9 @@ async function main() {
     },
   });
 
-  console.log('✅ Reseñas creadas');
-  console.log('\n🎉 Seed completado exitosamente!');
-  console.log('\n📋 Credenciales de prueba:');
+  console.log('Reseñas creadas');
+  console.log('\nSeed completado exitosamente!');
+  console.log('\nCredenciales de prueba:');
   console.log('  Admin:        admin@biblioteca.com / admin123');
   console.log('  Bibliotecario: bibliotecario@biblioteca.com / librarian123');
   console.log('  Usuario 1:    juan@example.com / user123');

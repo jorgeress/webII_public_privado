@@ -14,7 +14,7 @@ export const validate = (schema) => (req, res, next) => {
     });
   }
 
-  // En Express 5 req.query es read-only, guardamos en req.validated
+  
   req.validated = result.data;
 
   next();
