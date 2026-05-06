@@ -67,7 +67,7 @@ export async function listClients(req: Request, res: Response, next: NextFunctio
     const sort: Record<string, number> = { [sortKey]: sortOrder };
 
     const [items, total] = await Promise.all([
-      Client.find(filter).sort(sort).skip(skip).limit(limit),
+      Client.find(filter).sort(sort as any).skip(skip).limit(limit),
       Client.countDocuments(filter),
     ]);
 

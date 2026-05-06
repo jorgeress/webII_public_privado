@@ -1,0 +1,358 @@
+### BildyApp API — Ejemplos de peticiones
+### Variables: configura @baseUrl y @token antes de usar
+
+@baseUrl = http://localhost:3000/api
+@token = TU_ACCESS_TOKEN_AQUI
+
+# ════════════════════════════════════════════════════
+# USERS
+# ════════════════════════════════════════════════════
+
+### 1. Registro
+POST {{baseUrl}}/user/register
+Content-Type: application/json
+
+{
+  "email": "admin@empresa.com",
+  "password": "Password123"
+}
+
+###
+
+### 2. Verificar email
+PUT {{baseUrl}}/user/validation
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "123456"
+}
+
+###
+
+### 3. Login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+  "email": "admin@empresa.com",
+  "password": "Password123"
+}
+
+###
+
+### 4a. Datos personales
+PUT {{baseUrl}}/user/register
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Carlos",
+  "lastName": "García López",
+  "nif": "12345678A",
+  "address": {
+    "street": "Calle Mayor",
+    "number": "10",
+    "city": "Madrid",
+    "postal": "28001",
+    "province": "Madrid"
+  }
+}
+
+###
+
+### 4b. Crear compañía
+PATCH {{baseUrl}}/user/company
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isFreelance": false,
+  "name": "Construcciones García SL",
+  "cif": "B12345678",
+  "address": {
+    "street": "Polígono Industrial Norte",
+    "number": "5",
+    "city": "Madrid",
+    "postal": "28001",
+    "province": "Madrid"
+  }
+}
+
+###
+
+### 5. Obtener usuario
+GET {{baseUrl}}/user
+Authorization: Bearer {{token}}
+
+###
+
+### 6. Logout
+POST {{baseUrl}}/user/logout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "refreshToken": "TU_REFRESH_TOKEN"
+}
+
+###
+
+### 7. Cambiar contraseña
+PUT {{baseUrl}}/user/password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Password123",
+  "newPassword": "NuevaPassword456"
+}
+
+###
+
+### 8. Eliminar usuario (soft)
+DELETE {{baseUrl}}/user?soft=true
+Authorization: Bearer {{token}}
+
+###
+
+# ════════════════════════════════════════════════════
+# CLIENTS
+# ════════════════════════════════════════════════════
+
+### Crear cliente
+POST {{baseUrl}}/client
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Promotora Mediterráneo SA",
+  "cif": "A87654321",
+  "email": "contacto@mediterráneo.com",
+  "phone": "912345678",
+  "address": {
+    "street": "Avenida del Mar",
+    "number": "22",
+    "city": "Valencia",
+    "postal": "46001",
+    "province": "Valencia"
+  }
+}
+
+###
+
+### Listar clientes (paginado)
+GET {{baseUrl}}/client?page=1&limit=10&sort=-createdAt
+Authorization: Bearer {{token}}
+
+###
+
+### Buscar por nombre
+GET {{baseUrl}}/client?name=Mediter
+Authorization: Bearer {{token}}
+
+###
+
+### Obtener cliente
+GET {{baseUrl}}/client/ID_DEL_CLIENTE
+Authorization: Bearer {{token}}
+
+###
+
+### Actualizar cliente
+PUT {{baseUrl}}/client/ID_DEL_CLIENTE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "phone": "600111222",
+  "email": "nuevo@email.com"
+}
+
+###
+
+### Archivar cliente (soft delete)
+DELETE {{baseUrl}}/client/ID_DEL_CLIENTE?soft=true
+Authorization: Bearer {{token}}
+
+###
+
+### Hard delete cliente
+DELETE {{baseUrl}}/client/ID_DEL_CLIENTE
+Authorization: Bearer {{token}}
+
+###
+
+### Listar archivados
+GET {{baseUrl}}/client/archived
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurar cliente
+PATCH {{baseUrl}}/client/ID_DEL_CLIENTE/restore
+Authorization: Bearer {{token}}
+
+###
+
+# ════════════════════════════════════════════════════
+# PROJECTS
+# ════════════════════════════════════════════════════
+
+### Crear proyecto
+POST {{baseUrl}}/project
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "client": "ID_DEL_CLIENTE",
+  "name": "Rehabilitación Fachada Edificio Azul",
+  "projectCode": "PRJ-2025-001",
+  "address": {
+    "street": "Calle Serrano",
+    "number": "100",
+    "city": "Madrid",
+    "postal": "28006",
+    "province": "Madrid"
+  },
+  "email": "obra@edificioazul.com",
+  "notes": "Acceso por puerta lateral. Horario 8h-18h."
+}
+
+###
+
+### Listar proyectos
+GET {{baseUrl}}/project?page=1&limit=10&active=true&sort=-createdAt
+Authorization: Bearer {{token}}
+
+###
+
+### Filtrar por cliente
+GET {{baseUrl}}/project?client=ID_DEL_CLIENTE
+Authorization: Bearer {{token}}
+
+###
+
+### Obtener proyecto
+GET {{baseUrl}}/project/ID_DEL_PROYECTO
+Authorization: Bearer {{token}}
+
+###
+
+### Actualizar proyecto
+PUT {{baseUrl}}/project/ID_DEL_PROYECTO
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "notes": "Actualización: acceso también por puerta principal desde el 1 de enero.",
+  "active": true
+}
+
+###
+
+### Archivar proyecto
+DELETE {{baseUrl}}/project/ID_DEL_PROYECTO?soft=true
+Authorization: Bearer {{token}}
+
+###
+
+### Listar proyectos archivados
+GET {{baseUrl}}/project/archived
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurar proyecto
+PATCH {{baseUrl}}/project/ID_DEL_PROYECTO/restore
+Authorization: Bearer {{token}}
+
+###
+
+# ════════════════════════════════════════════════════
+# DELIVERY NOTES (ALBARANES)
+# ════════════════════════════════════════════════════
+
+### Crear albarán de horas
+POST {{baseUrl}}/deliverynote
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "project": "ID_DEL_PROYECTO",
+  "client": "ID_DEL_CLIENTE",
+  "format": "hours",
+  "workDate": "2025-06-15",
+  "description": "Instalación de andamios y preparación de superficie",
+  "workers": [
+    { "name": "Juan Martínez", "hours": 8 },
+    { "name": "Pedro Sánchez", "hours": 6 }
+  ]
+}
+
+###
+
+### Crear albarán de materiales
+POST {{baseUrl}}/deliverynote
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "project": "ID_DEL_PROYECTO",
+  "client": "ID_DEL_CLIENTE",
+  "format": "material",
+  "workDate": "2025-06-15",
+  "description": "Suministro de materiales de construcción",
+  "material": "Cemento Portland CEM II",
+  "quantity": 200,
+  "unit": "kg"
+}
+
+###
+
+### Listar albaranes (con filtros)
+GET {{baseUrl}}/deliverynote?page=1&limit=10&format=hours&signed=false&sort=-workDate
+Authorization: Bearer {{token}}
+
+###
+
+### Filtrar por fecha
+GET {{baseUrl}}/deliverynote?from=2025-01-01&to=2025-12-31
+Authorization: Bearer {{token}}
+
+###
+
+### Obtener albarán
+GET {{baseUrl}}/deliverynote/ID_DEL_ALBARAN
+Authorization: Bearer {{token}}
+
+###
+
+### Descargar PDF
+GET {{baseUrl}}/deliverynote/pdf/ID_DEL_ALBARAN
+Authorization: Bearer {{token}}
+
+###
+
+### Firmar albarán (multipart/form-data)
+# Nota: usa un cliente HTTP con soporte multipart (ej. Postman o curl)
+# curl -X PATCH http://localhost:3000/api/deliverynote/ID/sign \
+#   -H "Authorization: Bearer TOKEN" \
+#   -F "signature=@/ruta/a/firma.png"
+
+###
+
+### Eliminar albarán
+DELETE {{baseUrl}}/deliverynote/ID_DEL_ALBARAN
+Authorization: Bearer {{token}}
+
+###
+
+# ════════════════════════════════════════════════════
+# HEALTH CHECK
+# ════════════════════════════════════════════════════
+
+### Health
+GET http://localhost:3000/health
+
+###

@@ -81,7 +81,7 @@ export async function listDeliveryNotes(req: Request, res: Response, next: NextF
       DeliveryNote.find(filter)
         .populate('client', 'name cif')
         .populate('project', 'name projectCode')
-        .sort(sort).skip(skip).limit(limit),
+        .sort(sort as any).skip(skip).limit(limit),
       DeliveryNote.countDocuments(filter),
     ]);
 

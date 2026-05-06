@@ -74,7 +74,7 @@ export async function listProjects(req: Request, res: Response, next: NextFuncti
     const sort: Record<string, number> = { [sortKey]: sortOrder };
 
     const [items, total] = await Promise.all([
-      Project.find(filter).populate('client', 'name cif').sort(sort).skip(skip).limit(limit),
+      Project.find(filter).populate('client', 'name cif').sort(sort as any).skip(skip).limit(limit),
       Project.countDocuments(filter),
     ]);
 

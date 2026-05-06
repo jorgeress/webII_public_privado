@@ -58,9 +58,12 @@ app.set('io', io);
 // ── Security middleware ───────────────────────────────────────────────────────
 app.use(helmet());
 
+// ── Rate limiting ─────────────────────────────────────────────────────────────
+const isTest = process.env.NODE_ENV === 'test';
+
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: isTest ? 10000 : 100,  // sin límite efectivo en tests
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Demasiadas peticiones, intenta más tarde' },
@@ -68,12 +71,11 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: isTest ? 10000 : 20,   // sin límite efectivo en tests
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Demasiados intentos de autenticación' },
 });
-
 app.use(globalLimiter);
 app.use(express.json({ limit: '10kb' }));
 

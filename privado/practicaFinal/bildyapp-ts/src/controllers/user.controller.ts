@@ -12,12 +12,17 @@ import { mailService } from '../services/mail.service.js';
 import { storageService } from '../services/storage.service.js';
 
 function generateTokens(userId: string) {
-  const accessToken = jwt.sign({ id: userId }, config.jwt.accessSecret, {
-    expiresIn: config.jwt.accessExpires,
-  });
-  const refreshToken = jwt.sign({ id: userId }, config.jwt.refreshSecret, {
-    expiresIn: config.jwt.refreshExpires,
-  });
+  const accessToken = jwt.sign(
+  { id: userId }, 
+  config.jwt.accessSecret as string, 
+  { expiresIn: config.jwt.accessExpires as any } // Cambiado de accessExpiresIn a accessExpires
+);
+
+const refreshToken = jwt.sign(
+  { id: userId }, 
+  config.jwt.refreshSecret as string, 
+  { expiresIn: config.jwt.refreshExpires as any } // Cambiado de refreshExpiresIn a refreshExpires
+);
   return { accessToken, refreshToken };
 }
 
