@@ -141,7 +141,7 @@ export async function updatePersonalData(req: Request, res: Response, next: Next
   }
 }
 
-// ── 4b. Compañía ──────────────────────────────────────────────────────────────
+// ── 4b. Compañía (Corregido) ──────────────────────────────────────────────────
 export async function upsertCompany(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = await User.findById(req.user._id);
@@ -150,21 +150,28 @@ export async function upsertCompany(req: Request, res: Response, next: NextFunct
     let { isFreelance, name, cif, address } = req.body;
 
     if (isFreelance) {
-      if (!user.nif) throw AppError.badRequest('Completa tus datos personales (NIF) primero');
+      if (!user.nif) throw AppError.badRequest('Completa tu NIF primero');
       cif = user.nif;
       name = user.name ?? 'Autónomo';
       address = user.address;
     }
 
     let company = await Company.findOne({ cif, deleted: false });
+    
     if (!company) {
       company = await Company.create({ owner: user._id, name, cif, address, isFreelance });
       user.role = 'admin';
     } else {
-      user.role = 'guest';
+      // SI LA COMPAÑÍA YA EXISTE: 
+      // Si el usuario ya es el dueño o ya estaba en ella, no le bajamos el rango a guest
+      // de forma automática si ya era admin.
+      const isAlreadyOwner = String(company.owner) === String(user._id);
+      if (!isAlreadyOwner) {
+        user.role = 'guest';
+      }
     }
 
-    user.company = company._id as unknown as typeof user.company;
+    user.company = company._id as any;
     await user.save();
 
     res.json({ status: 'success', data: { company, role: user.role } });
