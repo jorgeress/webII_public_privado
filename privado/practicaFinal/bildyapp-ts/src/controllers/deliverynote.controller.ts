@@ -124,13 +124,11 @@ export async function downloadPdf(req: Request, res: Response, next: NextFunctio
     });
     if (!note) throw AppError.notFound('Albarán no encontrado');
 
-    // Si ya está firmado y tiene PDF en la nube, redirigir
     if (note.signed && note.pdfUrl) {
       res.redirect(note.pdfUrl);
       return;
     }
 
-    // Obtener datos relacionados para generar el PDF
     const [user, client, project] = await Promise.all([
       User.findById(note.user),
       Client.findById(note.client),
@@ -157,6 +155,9 @@ export async function downloadPdf(req: Request, res: Response, next: NextFunctio
 }
 
 // ── PATCH /api/deliverynote/:id/sign ─────────────────────────────────────────
+// Autorización: solo puede firmar el admin de la compañía o el usuario propietario
+// del albarán (quien lo creó).
+// Un guest de otra cuenta de la misma compañía NO puede firmar albaranes ajenos.
 export async function signDeliveryNote(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const note = await DeliveryNote.findOne({
@@ -166,15 +167,27 @@ export async function signDeliveryNote(req: Request, res: Response, next: NextFu
     });
     if (!note) throw AppError.notFound('Albarán no encontrado');
     if (note.signed) throw AppError.conflict('El albarán ya está firmado');
+
+    // ── Verificación de autorización ──────────────────────────────────────────
+    // El admin puede firmar cualquier albarán de su compañía.
+    // El guest solo puede firmar los albaranes que él mismo creó.
+    const isAdmin = req.user.role === 'admin';
+    const isOwner = String(note.user) === String(req.user._id);
+
+    if (!isAdmin && !isOwner) {
+      throw AppError.forbidden(
+        'Solo el administrador o el creador del albarán pueden firmarlo'
+      );
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     if (!req.file) throw AppError.badRequest('Se requiere la imagen de firma');
 
-    // Subir firma a Cloudinary
     const signatureUrl = await storageService.uploadSignature(
       req.file.buffer,
       `sig-${note._id}-${Date.now()}`
     );
 
-    // Obtener datos para generar PDF
     const [user, client, project] = await Promise.all([
       User.findById(note.user),
       Client.findById(note.client),
@@ -187,7 +200,6 @@ export async function signDeliveryNote(req: Request, res: Response, next: NextFu
     note.signatureUrl = signatureUrl;
     await note.save();
 
-    // Generar PDF y subirlo a Cloudinary
     const pdfBuffer = await generateDeliveryNotePdf({
       note,
       user: user as IUser,
