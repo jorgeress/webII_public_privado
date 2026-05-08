@@ -16,30 +16,30 @@ Control de Acceso: Refuerzo de la lógica de autorización en la firma de albara
 3. Respuestas Socráticas
 
 
-1. Aislamiento y Role Middleware
+#1. Aislamiento y Role Middleware
 Pregunta: ¿Debería el role middleware proteger el endpoint de obtención de albaranes? ¿Por qué no está en las rutas?
 
 Respuesta: El filtro { company, deleted: false } garantiza la seguridad a nivel de datos (que no veas lo de otros). No está en el router de forma genérica porque tanto admin como guest necesitan listar albaranes para trabajar. Sin embargo, para acciones críticas (firmar/borrar), la lógica de roles se aplica internamente en el controlador para permitir que el guest firme solo sus albaranes, mientras el admin firma cualquiera. Mejora: Sería ideal separar en rutas distintas o usar un middleware de autoría.
 
-2. Zod y la Inyección de Campos
+#2. Zod y la Inyección de Campos
    
 Pregunta: Si llega { "company": "otro-id" } en un update, ¿Zod lo rechazaría?
 
 Respuesta: Por defecto, Zod ignora los campos no definidos a menos que se use .strict(). Sin embargo, en mi implementación de updateClient, realizo una desestructuración manual (const { name, cif... } = req.body). Esto actúa como una Allowlist efectiva: aunque el atacante inyecte el campo company, este nunca se extrae ni se pasa al método $set de Mongoose, neutralizando el ataque.
 
-3. Vulnerabilidad SVG en Sharp
+#3. Vulnerabilidad SVG en Sharp
    
 Pregunta: ¿Es vulnerable el servicio si se suben SVGs?
 
 Respuesta: Sí. Los archivos SVG son XML y pueden contener scripts maliciosos (XSS) o entidades externas (XXE). Aunque Sharp intente procesarlo, el riesgo está en el parseo inicial. He resuelto esto en src/middleware/upload.ts definiendo una ALLOWED_IMAGE_MIMES que excluye explícitamente image/svg+xml, permitiendo solo formatos de mapa de bits (JPEG, PNG, WebP, GIF).
 
-4. Lógica de UpsertCompany y Autónomos
+#4. Lógica de UpsertCompany y Autónomos
    
 Pregunta: Si un autónomo llama dos veces a upsertCompany, ¿qué ocurre?
 
 Respuesta: Existe un fallo de lógica. La primera vez crea la empresa y el usuario es admin. La segunda vez, Company.findOne encuentra el CIF existente y el código entra en el else, asignando user.role = 'guest'. Resultado: El dueño de la empresa se degrada a sí mismo a invitado. Corrección: Se debe validar si el usuario actual ya es el owner de esa compañía antes de cambiar el rol.
 
-5. Buenas Prácticas en CI/CD (GitHub Secrets)
+#5. Buenas Prácticas en CI/CD (GitHub Secrets)
    
 Pregunta: ¿Es buena práctica hardcodear secretos en el YAML? ¿Cómo se configura?
 
