@@ -19,7 +19,15 @@ Control de Acceso: Refuerzo de la lógica de autorización en la firma de albara
 #1. Aislamiento y Role Middleware
 Pregunta: ¿Debería el role middleware proteger el endpoint de obtención de albaranes? ¿Por qué no está en las rutas?
 
-Respuesta: El filtro { company, deleted: false } garantiza la seguridad a nivel de datos (que no veas lo de otros). No está en el router de forma genérica porque tanto admin como guest necesitan listar albaranes para trabajar. Sin embargo, para acciones críticas (firmar/borrar), la lógica de roles se aplica internamente en el controlador para permitir que el guest firme solo sus albaranes, mientras el admin firma cualquiera. Mejora: Sería ideal separar en rutas distintas o usar un middleware de autoría.
+Respuesta: No, el middleware de rol no debe proteger de forma genérica el endpoint de obtención de albaranes en las rutas porque tanto el rol admin como el guest necesitan acceso a esta entidad para el funcionamiento normal de la aplicación.
+
+La seguridad no se basa solo en el rol (RBAC), sino en una combinación de Multi-tenancy y Autorización Lógica:
+
+Aislamiento de datos: El acceso a los albaranes se filtra en el controlador mediante el companyId del usuario autenticado, garantizando que nadie vea datos de otras empresas.
+
+Autorización granular (La mejora): En acciones críticas como la firma (PATCH /:id/sign), se ha implementado una verificación de propiedad en el controlador. Mientras que el admin puede firmar cualquier albarán de su empresa, el guest solo puede firmar aquellos que él mismo ha creado (isOwner).
+
+Si hubiéramos puesto el middleware de rol en la ruta, habríamos bloqueado funciones legítimas para el guest o permitido que un guest firme albaranes de sus compañeros injustificadamente. Al gestionarlo en el controlador, logramos un control de acceso mucho más preciso y seguro.
 
 #2. Zod y la Inyección de Campos
    
