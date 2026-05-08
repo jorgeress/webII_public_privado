@@ -12,7 +12,6 @@ export async function createProject(req: Request, res: Response, next: NextFunct
     const companyId = req.user.company;
     if (!companyId) throw AppError.badRequest('Debes pertenecer a una compañía');
 
-    // Verificar que el cliente pertenece a la misma compañía
     const clientDoc = await Client.findOne({ _id: clientId, company: companyId, deleted: false });
     if (!clientDoc) throw AppError.notFound('Cliente no encontrado en tu compañía');
 
@@ -41,11 +40,36 @@ export async function createProject(req: Request, res: Response, next: NextFunct
 }
 
 // ── PUT /api/project/:id ──────────────────────────────────────────────────────
+// Allowlist explícita — impide mass assignment de campos internos
+// como "company", "user", "deleted" o "projectCode" (inmutable tras creación).
 export async function updateProject(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    const { name, address, email, notes, active } = req.body as {
+      name?: string;
+      address?: {
+        street?: string;
+        number?: string;
+        postal?: string;
+        city?: string;
+        province?: string;
+      };
+      email?: string;
+      notes?: string;
+      active?: boolean;
+    };
+
+    // projectCode y client no se incluyen: son inmutables tras la creación
+    // company y user tampoco: son internos y no deben ser modificables por el cliente
+    const allowedUpdate: Record<string, unknown> = {};
+    if (name !== undefined)    allowedUpdate.name = name;
+    if (address !== undefined) allowedUpdate.address = address;
+    if (email !== undefined)   allowedUpdate.email = email;
+    if (notes !== undefined)   allowedUpdate.notes = notes;
+    if (active !== undefined)  allowedUpdate.active = active;
+
     const project = await Project.findOneAndUpdate(
       { _id: req.params.id, company: req.user.company, deleted: false },
-      { $set: req.body },
+      { $set: allowedUpdate },
       { new: true, runValidators: true }
     );
     if (!project) throw AppError.notFound('Proyecto no encontrado');

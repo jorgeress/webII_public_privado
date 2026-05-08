@@ -24,7 +24,6 @@ export async function createClient(req: Request, res: Response, next: NextFuncti
       address,
     });
 
-    // Socket.IO: emitir a la room de la compañía
     const io = req.app.get('io') as import('socket.io').Server;
     io.to(String(companyId)).emit('client:new', client);
 
@@ -35,12 +34,40 @@ export async function createClient(req: Request, res: Response, next: NextFuncti
 }
 
 // ── PUT /api/client/:id ───────────────────────────────────────────────────────
+// Allowlist explícita de campos actualizables.
+// Aunque Zod ya valida updateClientSchema (.partial()), un atacante podría
+// intentar inyectar campos como "company", "user" o "deleted" si el schema
+// cambia o si se aplica $set: req.body directamente.
 export async function updateClient(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const companyId = req.user.company;
+
+    // Extraer solo los campos que el cliente puede modificar
+    const { name, cif, email, phone, address } = req.body as {
+      name?: string;
+      cif?: string;
+      email?: string;
+      phone?: string;
+      address?: {
+        street?: string;
+        number?: string;
+        postal?: string;
+        city?: string;
+        province?: string;
+      };
+    };
+
+    // Construir el objeto de actualización solo con los campos presentes
+    const allowedUpdate: Record<string, unknown> = {};
+    if (name !== undefined)    allowedUpdate.name = name;
+    if (cif !== undefined)     allowedUpdate.cif = cif;
+    if (email !== undefined)   allowedUpdate.email = email;
+    if (phone !== undefined)   allowedUpdate.phone = phone;
+    if (address !== undefined) allowedUpdate.address = address;
+
     const client = await Client.findOneAndUpdate(
       { _id: req.params.id, company: companyId, deleted: false },
-      { $set: req.body },
+      { $set: allowedUpdate },
       { new: true, runValidators: true }
     );
     if (!client) throw AppError.notFound('Cliente no encontrado');
