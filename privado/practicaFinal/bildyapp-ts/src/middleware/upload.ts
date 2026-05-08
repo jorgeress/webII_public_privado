@@ -7,15 +7,31 @@ import { Request } from 'express';
 
 const storage = multer.memoryStorage();
 
+// Tipos MIME permitidos explícitamente — SVG excluido porque:
+// 1. Puede contener JavaScript embebido (<script>) → XSS stored
+// 2. Sharp puede procesar SVG pero el resultado es impredecible
+// 3. No es un formato útil para firmas o logos de empresa
+const ALLOWED_IMAGE_MIMES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
+
 function imageFilter(
   _req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ): void {
-  if (file.mimetype.startsWith('image/')) {
+  if (ALLOWED_IMAGE_MIMES.has(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(AppError.badRequest('Solo se permiten imágenes'));
+    cb(
+      AppError.badRequest(
+        `Tipo de archivo no permitido: ${file.mimetype}. ` +
+        `Solo se aceptan: ${[...ALLOWED_IMAGE_MIMES].join(', ')}`
+      )
+    );
   }
 }
 
