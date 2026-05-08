@@ -34,5 +34,16 @@ jobs:
         run: npm run test:coverage
         env:
           NODE_ENV: test
-          JWT_ACCESS_SECRET: ci-access-secret
-          JWT_REFRESH_SECRET: ci-refresh-secret
+          # Los secrets se configuran en GitHub → Settings → Secrets and variables → Actions
+          # No usar valores hardcodeados aquí para evitar exponer credenciales en el repo.
+          # mongodb-memory-server no necesita MONGODB_URI real; setup.ts lo genera en memoria.
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: privado/practicaFinal/bildyapp-ts/coverage/
+          retention-days: 7
