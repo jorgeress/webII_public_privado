@@ -4,6 +4,8 @@ import request from 'supertest';
 import { app } from '../src/app.js';
 import { connectDb, clearDb, disconnectDb, createUserWithCompany } from './helpers.js';
 import { DeliveryNote } from '../src/models/DeliveryNote.js';
+import { User } from '../src/models/User.js';
+import { Company } from '../src/models/Company.js';
 
 let token: string;
 let clientId: string;
@@ -164,7 +166,6 @@ describe('GET /api/deliverynote/pdf/:id', () => {
       .get(`/api/deliverynote/pdf/${id}`)
       .set('Authorization', `Bearer ${token}`);
 
-    // Puede ser 200 (PDF buffer) o 302 (redirect si está firmado)
     expect([200, 302]).toContain(res.status);
     if (res.status === 200) {
       expect(res.headers['content-type']).toContain('application/pdf');
@@ -191,10 +192,127 @@ describe('DELETE /api/deliverynote/:id', () => {
       .send(hoursNote());
 
     const id = created.body.data._id as string;
-
     await DeliveryNote.findByIdAndUpdate(id, { signed: true });
 
     const res = await request(app).delete(`/api/deliverynote/${id}`).set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(409);
+  });
+});
+
+// ── Seguridad: autorización en firma ─────────────────────────────────────────
+describe('PATCH /api/deliverynote/:id/sign — autorización', () => {
+  it('guest no puede firmar albarán creado por otro usuario', async () => {
+    // 1. El admin crea un albarán
+    const created = await request(app)
+      .post('/api/deliverynote')
+      .set('Authorization', `Bearer ${token}`)
+      .send(hoursNote());
+    const noteId = created.body.data._id as string;
+
+    // 2. Crear un usuario guest en la MISMA compañía
+    //    Obtenemos el usuario actual para saber su compañía
+    const meRes = await request(app)
+      .get('/api/user')
+      .set('Authorization', `Bearer ${token}`);
+    const companyId: string = meRes.body.data.company._id ?? meRes.body.data.company;
+
+    // Creamos el guest directamente en BD para simplificar el setup
+    const guestEmail = `guest-${Date.now()}@test.com`;
+    const bcrypt = await import('bcryptjs');
+    const hashedPwd = await bcrypt.default.hash('Password123', 10);
+    await User.create({
+      email: guestEmail,
+      password: hashedPwd,
+      role: 'guest',
+      status: 'verified',
+      company: companyId,
+    });
+
+    // 3. Login del guest
+    const guestLogin = await request(app)
+      .post('/api/user/login')
+      .send({ email: guestEmail, password: 'Password123' });
+    const guestToken: string = guestLogin.body.accessToken;
+
+    // 4. El guest intenta firmar el albarán del admin → debe recibir 403
+    const fakeSignature = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+
+    const signRes = await request(app)
+      .patch(`/api/deliverynote/${noteId}/sign`)
+      .set('Authorization', `Bearer ${guestToken}`)
+      .attach('signature', fakeSignature, { filename: 'firma.png', contentType: 'image/png' });
+
+    expect(signRes.status).toBe(403);
+    expect(signRes.body.message).toMatch(/administrador|creador/i);
+  });
+
+  it('el propietario guest SÍ puede firmar su propio albarán', async () => {
+    // 1. Crear guest en la misma compañía
+    const meRes = await request(app)
+      .get('/api/user')
+      .set('Authorization', `Bearer ${token}`);
+    const companyId: string = meRes.body.data.company._id ?? meRes.body.data.company;
+
+    const guestEmail = `guest-owner-${Date.now()}@test.com`;
+    const bcrypt = await import('bcryptjs');
+    const hashedPwd = await bcrypt.default.hash('Password123', 10);
+    await User.create({
+      email: guestEmail,
+      password: hashedPwd,
+      role: 'guest',
+      status: 'verified',
+      company: companyId,
+    });
+
+    const guestLogin = await request(app)
+      .post('/api/user/login')
+      .send({ email: guestEmail, password: 'Password123' });
+    const guestToken: string = guestLogin.body.accessToken;
+
+    // 2. El guest crea su propio albarán
+    const created = await request(app)
+      .post('/api/deliverynote')
+      .set('Authorization', `Bearer ${guestToken}`)
+      .send(hoursNote());
+    const noteId = created.body.data._id as string;
+
+    // 3. El guest firma su propio albarán → debe poder (si Cloudinary no está configurado,
+    //    fallará en el upload, pero la verificación de autorización pasa)
+    const fakeSignature = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+
+    const signRes = await request(app)
+      .patch(`/api/deliverynote/${noteId}/sign`)
+      .set('Authorization', `Bearer ${guestToken}`)
+      .attach('signature', fakeSignature, { filename: 'firma.png', contentType: 'image/png' });
+
+    // No debe ser 403 (autorización OK). Puede ser 200 (Cloudinary OK) o 500 (sin Cloudinary en tests)
+    expect(signRes.status).not.toBe(403);
+  });
+
+  it('admin puede firmar cualquier albarán de su compañía', async () => {
+    const created = await request(app)
+      .post('/api/deliverynote')
+      .set('Authorization', `Bearer ${token}`)
+      .send(hoursNote());
+    const noteId = created.body.data._id as string;
+
+    const fakeSignature = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+
+    const signRes = await request(app)
+      .patch(`/api/deliverynote/${noteId}/sign`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('signature', fakeSignature, { filename: 'firma.png', contentType: 'image/png' });
+
+    // No debe ser 403 — puede ser 200 o 500 (Cloudinary no configurado en tests)
+    expect(signRes.status).not.toBe(403);
   });
 });
