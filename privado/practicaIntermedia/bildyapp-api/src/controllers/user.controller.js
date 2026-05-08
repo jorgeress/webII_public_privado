@@ -50,8 +50,7 @@ export async function register(req, res, next) {
     });
 
     const { accessToken, refreshToken } = generateTokens(user._id);
-    user.refreshTokens.push(refreshToken);
-    await user.save();
+    await User.findByIdAndUpdate(user._id, { $push: { refreshTokens: refreshToken } });
 
     notificationService.emit('user:registered', user);
 
@@ -72,7 +71,7 @@ export async function register(req, res, next) {
 export async function verifyEmail(req, res, next) {
   try {
     const { code } = req.body;
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+verificationCode +verificationAttempts +refreshTokens');
 
     if (user.status === 'verified') {
       return res.json({ status: 'success', message: 'Email ya verificado' });
@@ -113,11 +112,15 @@ export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email, deleted: false });
+    const user = await User.findOne({ email, deleted: false }).select('+password +refreshTokens');
     if (!user) throw AppError.unauthorized('Credenciales incorrectas');
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw AppError.unauthorized('Credenciales incorrectas');
+
+    if (user.status !== 'verified') {
+      throw AppError.unauthorized('Debes verificar tu email antes de iniciar sesión');
+    }
 
     const { accessToken, refreshToken } = generateTokens(user._id);
     user.refreshTokens.push(refreshToken);
@@ -235,7 +238,7 @@ export async function refreshToken(req, res, next) {
       throw AppError.unauthorized('Refresh token inválido o expirado');
     }
 
-    const user = await User.findById(payload.id);
+    const user = await User.findById(payload.id).select('+refreshTokens');
     if (!user || !user.refreshTokens.includes(token)) {
       throw AppError.unauthorized('Refresh token no reconocido');
     }
@@ -257,7 +260,7 @@ export async function refreshToken(req, res, next) {
 export async function logout(req, res, next) {
   try {
     const token = req.body?.refreshToken;
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+refreshTokens');
 
     if (token) {
       user.refreshTokens = user.refreshTokens.filter((t) => t !== token);
@@ -300,7 +303,7 @@ export async function changePassword(req, res, next) {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password +refreshTokens');
     const valid = await bcrypt.compare(currentPassword, user.password);
     if (!valid) throw AppError.unauthorized('La contraseña actual no es correcta');
 
