@@ -3,7 +3,7 @@ Informe de Examen — BildyApp API
    
 El objetivo principal ha sido securizar la API de BildyApp, garantizando que el aislamiento de datos por compañía sea infranqueable (Multi-tenancy) y que la gestión de archivos y permisos de usuario sigan las mejores prácticas de seguridad (OWASP).
 
-3. Tarea Técnica
+2. Tarea Técnica
    
 Se han implementado las siguientes mejoras de seguridad y control:
 
@@ -46,6 +46,7 @@ Pregunta: ¿Es buena práctica hardcodear secretos en el YAML? ¿Cómo se config
 Respuesta: Es una práctica insegura, ya que el secreto queda en el historial de Git. La forma correcta es usar GitHub Secrets. Se deben configurar en Settings -> Secrets and variables -> Actions del repositorio y referenciarlos en el YAML mediante la sintaxis ${{ secrets.JWT_ACCESS_SECRET }}. El archivo proporcionado ya sigue esta estructura recomendada.
 
 4. Proceso de Desarrollo
+   
 Auditoría: Revisión de controladores para detectar el uso de req.body sin filtrar.
 
 Refactorización: Aplicación de desestructuración en los métodos update de clientes y proyectos.
